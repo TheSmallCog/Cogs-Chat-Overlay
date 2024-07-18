@@ -104,7 +104,12 @@
     </head>
     
     <body>
-        <script type="text/javascript">
+        <div class="chat chat--rounded">
+            <ul>
+            </ul>
+        </div>
+    </body>
+    <script type="text/javascript">
         ComfyJS.onChat = (user, message, flags, self, extra) => {
             var newMessage = document.createElement("li");
 
@@ -126,10 +131,5 @@
         }
 
         ComfyJS.Init( "callmeCog" );
-
-        <div class="chat chat--rounded">
-            <ul>
-            </ul>
-        </div>
-    </body>
+    </script> 
 </html>
