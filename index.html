@@ -3,8 +3,130 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
+        <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
+        <style>
+            html, body {
+                width: 900px;
+                height: 1125px;
+                margin: 0;
+                background: rgba(0,0,0, 0)
+            }
+
+            .chat {
+                width: 900px;
+                height: 1125px;
+            }
+
+            .chat::-webkit-scrollbar {
+                display: none;
+            }
+
+            .chat ul {
+                list-style-type: none;
+                list-style-position: outside;
+                font-family: sans-serif;
+                font-size: 1.2rem;
+                color: whitesmoke;
+                line-height: 1.0;
+            }
+            .chat li {
+                position: relative;
+                display: flex;
+                align items: left;
+                width: fit-content;
+                margin: 1rem auto 2rem;
+                padding: 1rem;
+                max-width: 95%
+
+                box-sizing: border-box;
+                border: 10px solid transparent;
+                background: linear-gradient(to left top, rgb(0, 11, 116), rgb(0, 22, 255));
+                background-repeat: no-repeat;
+            }
+        
+            .chat li.mod {
+                background-color: linear-gradient(to right bottom, rgb(98, 160, 234), rgb(26, 95, 180));
+            }
+
+            .chat li.sub {
+                backrground-color: linear-gradient(to right top, rgb(97, 53, 131), rgb(192, 28, 40));
+            }
+
+            .chat--rounded li {
+                border-radius: 1rem;
+                border-width: 10px;
+                position: relative;
+            }
+
+            .chat--rounded::before li {
+                content: "";
+                position:absolute;
+                top: -4px;
+                bottom: -6px;
+                left: -6px;
+                right: -6px;
+                border: 8px;
+                border-radius .2rem;
+                z-index: -1;
+                background: radial-gradient(35% 125% at 50% 25%, #FFFFFFFF 0%, #E7EEEEFF 35%, #8E8C8CFF 100%) border-box;
+            }
+
+            .chat--rounded::before li.mod {
+                background: linear-gradient(0deg, rgb(63, 65, 63), rgb(177, 185, 179));
+            }
+
+            .chat--rounded::before li.sub {
+                background: linear-gradient(0deg, rgb(246, 211, 45), rgb(198, 70, 0));
+            }
+
+            .chat li:not(:last-of-type) {
+                opacity: 0.7;
+           }
+
+            .chat li:last-of-type {
+                animation-name: slide-in-left;
+                animation-duration: 0.5s;
+                animation-timing-function: ease-in;
+            }
+        
+            @keyframes slide-in-left {
+                from {
+                    transform: translateX(900px);
+                    opacity: 0;
+                }
+        
+                to {
+                    transform: translateX(0px);
+                    opacity: 1;
+                }
+            }
+        </style>
+    </head>
+    
     <body>
+        <script type="text/javascript">
+        ComfyJS.onChat = (user, message, flags, self, extra) => {
+            var newMessage = document.createElement("li");
+
+            if (message.mod) {
+                newMessage.classList.add('mod');
+            }
+
+            if (message.subscriber) {
+                newMessage.classList.add('sub');
+            }
+
+            var text = document.createElement("blockquote");
+
+            newMessage.innerText = user;
+            text.innerText = message;
+
+            newMessage.append(text);
+            chat.append(newMessage);
+        }
+
+        ComfyJS.Init( "callmeCog" );
+
         <div class="chat chat--rounded">
             <ul>
             </ul>
