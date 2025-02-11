@@ -1,138 +1,275 @@
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
-        <style>
-            html, body {
-                width: 900px;
-                height: 1125px;
-                margin: 0;
-                background: rgba(0,0,0, 0)
-            }
-
-            .chat {
-                width: 900px;
-                height: 1125px;
-                overflow: hidden;
-            }
-
-            .chat::-webkit-scrollbar {
-                display: none;
-            }
-
-            .chat ul {
-                list-style-type: none;
-                list-style-position: outside;
-                font-family: sans-serif;
-                font-size: 1.2rem;
-                color: whitesmoke;
-                line-height: 1.0;
-            }
-            
-            .chat li {
-                position: relative;
-                display: flex;
-                align items: left;
-                width: fit-content;
-                margin: 1rem auto 2rem;
-                padding: 1rem;
-                max-width: 95%
-
-                box-sizing: border-box;
-                border: 10px solid transparent;
-                background: linear-gradient(to left top, rgb(0, 11, 116), rgb(0, 22, 255));
-                background-repeat: no-repeat;
-            }
-        
-            .chat li.mod {
-                background-color: linear-gradient(to right bottom, rgb(98, 160, 234), rgb(26, 95, 180));
-            }
-
-            .chat li.sub {
-                backrground-color: linear-gradient(to right top, rgb(97, 53, 131), rgb(192, 28, 40));
-            }
-
-            .chat--rounded li {
-                border-radius: 1rem;
-                border-width: 10px;
-                position: relative;
-            }
-
-            .chat--rounded::before li {
-                content: "";
-                position:absolute;
-                top: -4px;
-                bottom: -6px;
-                left: -6px;
-                right: -6px;
-                border: 8px;
-                border-radius .2rem;
-                z-index: -1;
-                background: radial-gradient(35% 125% at 50% 25%, #FFFFFFFF 0%, #E7EEEEFF 35%, #8E8C8CFF 100%) border-box;
-            }
-
-            .chat--rounded::before li.mod {
-                background: linear-gradient(0deg, rgb(63, 65, 63), rgb(177, 185, 179));
-            }
-
-            .chat--rounded::before li.sub {
-                background: linear-gradient(0deg, rgb(246, 211, 45), rgb(198, 70, 0));
-            }
-
-            .chat li:not(:last-of-type) {
-                opacity: 0.7;
-           }
-
-            .chat li:last-of-type {
-                animation-name: slide-in-left;
-                animation-duration: 0.5s;
-                animation-timing-function: ease-in;
-            }
-        
-            @keyframes slide-in-left {
-                from {
-                    transform: translateX(900px);
-                    opacity: 0;
-                }
-        
-                to {
-                    transform: translateX(0px);
-                    opacity: 1;
-                }
-            }
-        </style>
-    </head>
-    
-    <body>
-        <div class="chat chat--rounded">
-            <ul>
-            </ul>
-        </div>
-    </body>
-    <script type="text/javascript">
-        ComfyJS.onChat = (user, message, flags, self, extra) => {
-            var newMessage = document.createElement("li");
-    
-            if (message.mod) {
-                newMessage.classList.add('mod');
-            }
-
-            if (message.subscriber) {
-                newMessage.classList.add('sub');
-            }
-
-            var text = document.createElement("blockquote");
-            const chat = document.getElementsByTagName("ul");
-
-            newMessage.innerText = user;
-            text.innerText = message;
-
-            newMessage.append(text);
-            chat.append(newMessage);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            width: 900px;
+            height: 1125px;
+            margin: 0;
+            background: rgba(0, 0, 0, 0);
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
         }
 
-        ComfyJS.Init( "callmeCog" );
-    </script> 
+        .chat {
+            width: 900px;
+            height: 1125px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .chat ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            role: "list";
+        }
+
+        .chat li {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: fit-content;
+            max-width: 80%;
+            border-radius: 8px;
+            background-clip: padding-box;
+            animation: slide-in-left 1.7s ease-out, slide-out-left 2.3s 10s ease-in forwards;
+            border: 4px solid transparent;
+            background-origin: border-box;
+            font-size: 20px;
+            opacity: 0.7;
+            role: "listitem";
+        }
+
+        /* Gradient fill and border for non-followers */
+        .chat li:not(.mod):not(.sub):not(.streamer):not(.follower) {
+            background:
+                linear-gradient(to left top, rgb(0, 5, 58), rgb(0, 10, 128)) padding-box,
+                linear-gradient(to right, rgb(50, 50, 50), rgb(150, 150, 150)) border-box;
+        }
+
+        .chat li.follower {
+            background:
+                linear-gradient(to left top, rgb(0, 11, 116), rgb(0, 22, 255)) padding-box,
+                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+        }
+
+        .chat li.sub {
+            background:
+                linear-gradient(to left top, rgb(97, 53, 131), rgb(192, 28, 40)) padding-box,
+                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+        }
+
+        .chat li.mod {
+            background:
+                linear-gradient(to left top, rgb(91, 206, 250), rgb(245, 169, 184), white) padding-box,
+                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+        }
+
+        .chat li.streamer {
+            background:
+                linear-gradient(to left top, rgb(128, 0, 0), rgb(64, 0, 0)) padding-box,
+                linear-gradient(to right, gold, silver) border-box;
+        }
+
+        .chat li .username {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-size: 16px;
+        }
+
+        .chat li .message {
+            color: white;
+            margin-left: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-size: 18px;
+            word-wrap: break-word;
+        }
+
+        .chat li .message img {
+            vertical-align: middle;
+            height: 1.2em;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.7));
+        }
+
+        .chat li:nth-last-child(-n+3) {
+            opacity: calc(0.7 + 0.1 * (3 - (6 - var(--index))));
+        }
+
+        @keyframes slide-in-left {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slide-out-left {
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat">
+        <ul role="list"></ul>
+    </div>
+
+    <script>
+        const chatList = document.querySelector('.chat ul');
+        const messageDuration = 30000; // 30 seconds in milliseconds
+        const channel = new URLSearchParams(window.location.search).get('channel') || 'callmeCog'; // Configurable channel name
+
+        // Fetch BTTV and FFZ emotes for the channel
+        async function fetchThirdPartyEmotes(channel) {
+            const bttvUrl = `https://api.betterttv.net/3/cached/users/twitch/${channel}`;
+            const ffzUrl = `https://api.frankerfacez.com/v1/room/${channel}`;
+
+            try {
+                const [bttvResponse, ffzResponse] = await Promise.all([
+                    fetch(bttvUrl).then(res => res.json()),
+                    fetch(ffzUrl).then(res => res.json()),
+                ]);
+
+                const emotes = {};
+
+                // Add BTTV emotes (if they exist)
+                if (bttvResponse.channelEmotes) {
+                    bttvResponse.channelEmotes.forEach(emote => {
+                        emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
+                    });
+                }
+                if (bttvResponse.sharedEmotes) {
+                    bttvResponse.sharedEmotes.forEach(emote => {
+                        emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
+                    });
+                }
+
+                // Add FFZ emotes (if they exist)
+                if (ffzResponse.sets && ffzResponse.sets[ffzResponse.room.set]?.emoticons) {
+                    ffzResponse.sets[ffzResponse.room.set].emoticons.forEach(emote => {
+                        emotes[emote.name] = `https://cdn.frankerfacez.com/emote/${emote.id}/1`;
+                    });
+                }
+
+                return emotes;
+            } catch (error) {
+                console.error('Error fetching third-party emotes:', error);
+                return {};
+            }
+        }
+
+        // Replace emote codes with images
+        function parseMessage(message, emotes, thirdPartyEmotes) {
+            const messageParts = [];
+            let lastIndex = 0;
+
+            // Combine Twitch and third-party emotes into a single parsing logic
+            const allEmotes = { ...emotes, ...thirdPartyEmotes };
+
+            // Sort emotes by their starting position in the message
+            const sortedEmotes = Object.entries(allEmotes).sort((a, b) => {
+                const aStart = a[1][0]?.start || 0;
+                const bStart = b[1][0]?.start || 0;
+                return aStart - bStart;
+            });
+
+            sortedEmotes.forEach(([emoteId, ranges]) => {
+                const { start, end } = ranges[0] || { start: 0, end: 0 };
+                const emoteText = message.slice(start, end + 1);
+
+                // Add text before the emote
+                if (start > lastIndex) {
+                    messageParts.push(document.createTextNode(message.slice(lastIndex, start)));
+                }
+
+                // Add the emote image
+                const emoteImg = document.createElement('img');
+                emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
+                emoteImg.alt = `Emote: ${emoteText}`; // Alt text
+                messageParts.push(emoteImg);
+
+                lastIndex = end + 1;
+            });
+
+            // Add remaining text after the last emote
+            if (lastIndex < message.length) {
+                messageParts.push(document.createTextNode(message.slice(lastIndex)));
+            }
+
+            return messageParts;
+        }
+
+        // Initialize ComfyJS and fetch third-party emotes
+        let thirdPartyEmotes = {};
+
+        fetchThirdPartyEmotes(channel).then(emotes => {
+            thirdPartyEmotes = emotes;
+        }).catch(error => {
+            console.error('Failed to fetch third-party emotes:', error);
+        });
+
+        ComfyJS.onChat = (user, message, flags, self, extra) => {
+            const newMessage = document.createElement('li');
+
+            // Add classes based on user role
+            if (flags.broadcaster) {
+                newMessage.classList.add('streamer');
+            } else if (flags.mod) {
+                newMessage.classList.add('mod');
+            } else if (flags.subscriber) {
+                newMessage.classList.add('sub');
+            } else if (flags.follower) {
+                newMessage.classList.add('follower');
+            }
+
+            // Create username and message elements
+            const username = document.createElement('div');
+            username.classList.add('username');
+            username.textContent = user;
+
+            const messageText = document.createElement('div');
+            messageText.classList.add('message');
+
+            // Parse emotes in the message
+            const messageParts = parseMessage(message, extra.emotes || {}, thirdPartyEmotes);
+            messageParts.forEach(part => messageText.appendChild(part));
+
+            newMessage.append(username, messageText);
+            chatList.appendChild(newMessage);
+
+            // Limit to 6 messages
+            if (chatList.children.length > 6) {
+                chatList.removeChild(chatList.firstChild);
+            }
+
+            // Remove the message after 30 seconds
+            setTimeout(() => {
+                if (newMessage.parentElement) {
+                    newMessage.remove();
+                }
+            }, messageDuration);
+        };
+
+        ComfyJS.Init('callmeCog');
+    </script>
+</body>
 </html>
