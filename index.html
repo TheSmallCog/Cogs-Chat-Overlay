@@ -146,12 +146,11 @@
     <script>
         const chatList = document.querySelector('.chat ul');
         const messageDuration = 30000; // 30 seconds in milliseconds
-        const channel = new URLSearchParams(window.location.search).get('channel') || 'callmeCog'; // Configurable channel name
-
+        
         // Fetch BTTV and FFZ emotes for the channel
         async function fetchThirdPartyEmotes(channel) {
-            const bttvUrl = `https://api.betterttv.net/3/cached/users/twitch/${channel}`;
-            const ffzUrl = `https://api.frankerfacez.com/v1/room/${channel}`;
+            const bttvUrl = `https://api.betterttv.net/3/cached/users/twitch/callmeCog;
+            const ffzUrl = `https://api.frankerfacez.com/v1/room/callmeCog;
 
             try {
                 const [bttvResponse, ffzResponse] = await Promise.all([
