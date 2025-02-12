@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         html, body {
-            width: 900px;
-            height: 1125px;
+            width: 800px;
+            height: 600px;
             margin: 0;
             background: rgba(0, 0, 0, 0);
             overflow: hidden;
@@ -17,13 +17,13 @@
         }
 
         .chat {
-            width: 900px;
-            height: 1125px;
+            width: 800px;
+            height: 600px;
             padding: 10px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end /*Start messages from the bottom*/
+            justify-content: flex-end;
         }
 
         .chat ul {
@@ -32,7 +32,7 @@
             margin: 0;
             role: "list";
             display: flex;
-            flex-direction: colummn;
+            flex-direction: column-reverse; /* Messages flow upward */
             justify-content: flex-end;
         }
 
@@ -149,8 +149,8 @@
         
         // Fetch BTTV and FFZ emotes for the channel
         async function fetchThirdPartyEmotes(channel) {
-            const bttvUrl = `https://api.betterttv.net/3/cached/users/twitch/callmeCog;
-            const ffzUrl = `https://api.frankerfacez.com/v1/room/callmeCog;
+            const bttvUrl = `https://api.betterttv.net/3/cached/users/twitch/${channel}`;
+            const ffzUrl = `https://api.frankerfacez.com/v1/room/${channel}`;
 
             try {
                 const [bttvResponse, ffzResponse] = await Promise.all([
@@ -230,7 +230,7 @@
         // Initialize ComfyJS and fetch third-party emotes
         let thirdPartyEmotes = {};
 
-        fetchThirdPartyEmotes(channel).then(emotes => {
+        fetchThirdPartyEmotes('callmeCog').then(emotes => {
             thirdPartyEmotes = emotes;
         }).catch(error => {
             console.error('Failed to fetch third-party emotes:', error);
