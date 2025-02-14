@@ -18,7 +18,7 @@
             margin: 0;
             background: rgba(0, 0, 0, 0);
             overflow: hidden;
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'Press Start 2P';
         }
 
         .chat {
@@ -102,8 +102,8 @@
                 radial-gradient(rgba(20,190,197,1) 30%, rgba(75,240,226,1) 50%, rgba(177,248,253,1) 80%, rgba(67,239,212,1) 100%) border-box;
                 border: 5px solid transparent;
                 box-shadow:
-                    0 0 10px rgba(177,248,253,0.8),
-                    inset 0 0 20px rgba(67,239,212,1);
+                    0 0 10px rgba(177,248,253,0.8), /* Outer Glow */
+                    inset 0 0 20px rgba(67,239,212,1); /* Inner Glow */
         }
 
         .chat li .username,
