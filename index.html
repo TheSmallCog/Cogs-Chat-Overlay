@@ -60,41 +60,50 @@
             role: "listitem";
         }
 
-        /* Shared gradient styles */
+        /* Shared styling */
         .chat li {
             background-clip: padding-box;
             background-origin: border-box;
             border: 4px solid transparent;
+            border-radius: 8px
         }
 
         .chat li:not(.mod):not(.sub):not(.streamer):not(.follower) {
             background:
-                linear-gradient(to left top, rgb(0, 5, 58), rgb(0, 10, 128)) padding-box,
-                linear-gradient(to right, rgb(50, 50, 50), rgb(150, 150, 150)) border-box;
+                linear-gradient(143deg, rgba(110,98,255,1) 0%, rgba(14,13,202,1) 17%, rgba(6,6,198,1) 58%, rgba(0,0,47,1) 100%) padding-box,
+                radial-gradient(circle, rgba(181,181,182,1) 90%, rgba(221,221,222,1) 92%, rgba(254,254,255,1) 96%, rgba(132,132,134,1) 100%) border-box;
         }
 
         .chat li.follower {
             background:
-                linear-gradient(to left top, rgb(0, 11, 116), rgb(0, 22, 255)) padding-box,
-                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+                linear-gradient(143deg, rgba(110,98,255,1) 0%, rgba(14,13,202,1) 17%, rgba(6,6,198,1) 58%, rgba(0,0,47,1) 100%) padding-box,
+                radial-gradient(circle, rgba(244,187,23,1) 60%, rgba(249,215,29,1) 85%, rgba(255,242,14,1) 97%, rgba(219,179,6,1) 100%) border-box;
         }
 
         .chat li.sub {
             background:
-                linear-gradient(to left top, rgb(97, 53, 131), rgb(192, 28, 40)) padding-box,
-                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+                linear-gradient(143deg, rgba(192,28,40,1) ) 0%, rgba(154,14,113,1) 7%, rgba(99,0,135,1) 15%, rgba(107,0,164,1) 42%, rgba(27,0,47,1) 100%) padding-box,
+                radial-gradient(circle, rgba(244,187,23,1) 60%, rgba(249,215,29,1) 85%, rgba(255,242,14,1) 97%, rgba(219,179,6,1) 100%) border-box;
         }
 
         .chat li.mod {
             background:
-                linear-gradient(to left top, rgb(91, 206, 250), rgb(245, 169, 184), white) padding-box,
-                linear-gradient(to right, rgb(150, 100, 0), rgb(255, 200, 0)) border-box;
+                linear-gradient(180deg, rgba(255,114,187,1) 0%, rgba(255,251,253,1) 40%, rgba(255,255,255,1) 50%, rgba(255,255,255,1) 60%, rgba(5,230,246,1) 100%) padding-box,
+                radial-gradient(rgba(247,207,233,1) 60%, rgba(255,227,245,1) 90%, rgba(255,0,166,1) 100%) border-box;
+                border: 5px solid transparent; /* Slightly bigger than shared class styling to look better with the glow effect */
+                box-shadow: 
+                    0 0 20px rgba(255, 0, 166, 0.8), /* Outer glow */
+                    inset 0 0 5px rgba(247, 207, 233, 0.4); /* Inner glow */
         }
 
         .chat li.streamer {
             background:
-                linear-gradient(to left top, rgb(128, 0, 0), rgb(64, 0, 0)) padding-box,
-                linear-gradient(to right, gold, silver) border-box;
+                linear-gradient(143deg, rgba(255, 0, 0, 1) 0%, rgba(173, 5, 5, 1) 30%, rgba(87, 1, 1, 1) 100%) padding-box,
+                radial-gradient(rgba(20,190,197,1) 30%, rgba(75,240,226,1) 50%, rgba(177,248,253,1) 80%, rgba(67,239,212,1) 100%) border-box;
+                border: 5px solid transparent;
+                box-shadow:
+                    0 0 10px rgba(177,248,253,0.8),
+                    inset 0 0 20px rgba(67,239,212,1);
         }
 
         .chat li .username,
@@ -182,8 +191,8 @@
         }
 
         .controls.collapsed {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             padding: 5px;
         }
 
