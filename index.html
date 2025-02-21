@@ -6,10 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Cogs Chat Overlay</title>
     <style>
-        :root {
+            :root {
             --text-stroke: 1px black;
             --paint-order: stroke fill;
+            --text-color: #ffffff;
+            --outline-color: #000000;
+            --outline-thickness: 1px;
         }
 
         html, body {
@@ -35,7 +39,6 @@
             list-style-type: none;
             padding: 0;
             margin: 0;
-            role: "list";
             display: flex;
             flex-direction: column-reverse;
             justify-content: flex-end;
@@ -55,17 +58,8 @@
                        slide-out-left 0.5s 20s ease-in forwards;
             border: 4px solid transparent;
             background-origin: border-box;
-            font-size: 20px;
+            font-size: 1.25rem;
             opacity: 0.7;
-            role: "listitem";
-        }
-
-        /* Shared styling */
-        .chat li {
-            background-clip: padding-box;
-            background-origin: border-box;
-            border: 4px solid transparent;
-            border-radius: 8px
         }
 
         .chat li:not(.mod):not(.sub):not(.streamer):not(.follower) {
@@ -90,10 +84,10 @@
             background:
                 linear-gradient(180deg, rgba(255,114,187,1) 0%, rgba(255,251,253,1) 40%, rgba(255,255,255,1) 50%, rgba(255,255,255,1) 60%, rgba(5,230,246,1) 100%) padding-box,
                 radial-gradient(rgba(247,207,233,1) 60%, rgba(255,227,245,1) 90%, rgba(255,0,166,1) 100%) border-box;
-                border: 5px solid transparent; /* Slightly bigger than shared class styling to look better with the glow effect */
-                box-shadow: 
-                    0 0 20px rgba(255, 0, 166, 0.8), /* Outer glow */
-                    inset 0 0 5px rgba(247, 207, 233, 0.4); /* Inner glow */
+                border: 5px solid transparent;
+                box-shadow:
+                    0 0 20px rgba(255, 0, 166, 0.8),
+                    inset 0 0 5px rgba(247, 207, 233, 0.4);
         }
 
         .chat li.streamer {
@@ -102,36 +96,35 @@
                 radial-gradient(rgba(20,190,197,1) 30%, rgba(75,240,226,1) 50%, rgba(177,248,253,1) 80%, rgba(67,239,212,1) 100%) border-box;
                 border: 5px solid transparent;
                 box-shadow:
-                    0 0 10px rgba(177,248,253,0.8), /* Outer Glow */
-                    inset 0 0 20px rgba(67,239,212,1); /* Inner Glow */
+                    0 0 10px rgba(177,248,253,0.8),
+                    inset 0 0 20px rgba(67,239,212,1);
         }
 
         .chat li .username,
         .chat li .message,
         .controls h2,
-        .controls label {
-            -webkit-text-stroke: var(--text-stroke);
-            text-stroke: var(--text-stroke);
+        .controls label { /* Dynamically reflects chosen text customization */
+            -webkit-text-stroke: var(--outline-thickness) var(--outline-color);
+            text-stroke: var(--outline-thickness) var(--outline-color);
             paint-order: var(--paint-order);
+            color: var(--text-color);
         }
 
         .chat li .username {
             font-weight: bold;
             margin-bottom: 5px;
-            color: white;
             text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            font-size: 16px;
+            font-size: 1rem;
         }
 
         .chat li .message {
-            color: white;
             margin-left: 20px;
             display: flex;
             flex-wrap: wrap;
-            align-items: center;
+            align-items: left;
             gap: 4px;
             text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            font-size: 18px;
+            font-size: 1.125rem;
             word-wrap: break-word;
         }
 
@@ -141,6 +134,7 @@
             filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.7));
         }
 
+        /* Dynamic opacity for oldest 3 messages */
         .chat li:nth-last-child(-n+3) {
             opacity: calc(0.7 + 0.1 * (3 - (6 - var(--index))));
         }
@@ -173,7 +167,6 @@
             }
         }
 
-        /* Customization controls */
         .controls {
             position: absolute;
             bottom: 10px;
@@ -202,7 +195,7 @@
 
         .controls h2 {
             margin: 0;
-            font-size: 14px;
+            font-size: 0.875rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -210,7 +203,7 @@
             gap: 5px;
             color: white;
             text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
-            height: 100%; /* Ensure button fits collapsed menu */
+            height: 100%;
         }
 
         .controls h2::after {
@@ -226,7 +219,7 @@
         .controls label {
             display: block;
             margin-bottom: 5px;
-            font-size: 12px;
+            font-size: 0.75rem;
             color: white;
             text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
             text-align: center;
@@ -236,84 +229,258 @@
             width: 100%;
             margin-bottom: 10px;
         }
+
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            max-width: 200px;
+        }
+
+        .color-option {
+            width: 20px;
+            height: 20px;
+            border: 2px solid black;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+
+        #save-palette,
+        #palette-selector,
+        #delete-palette {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            background: linear-gradient(143deg, rgba(110, 98, 255, 1) 0%, rgba(14, 13, 202, 1) 17%, rgba(6, 6, 198, 1) 58%, rgba(0, 0, 47, 1) 100%) padding-box,
+                        radial-gradient(circle, rgba(181, 181, 182, 1) 90%, rgba(221, 221, 222, 1) 92%, rgba(254, 254, 255, 1) 96%, rgba(132, 132, 134, 1) 100%) border-box;
+            color: white;
+            font-family: 'Press Start 2P';
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            text-align: center;
+        }
+
+        /* Make the button slighlty larger when mouse hovers */
+        #save-palette:hover,
+        #palette-selector:hover,
+        #delete-palette:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Make the button slightly smaller on click */
+        #save-palette:active,
+        #palette-selector:active,
+        #delete-palette:active {
+            transform: scale(0.95);
+        }
+
+        #palette-selector {
+            appearance: none;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #palette-selector option {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="controls collapsed" role="form" aria-labelledby="controls-heading">
-        <h2 id="controls-heading" tabindex="0" role="button" aria-expanded="false">
+        <h2 id="controls-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="controls-content">
             ⚙️
         </h2>
-        <div class="controls-content">
+        <div class="controls-content" id="controls-content">
             <label for="text-color">Text Color:</label>
-            <input type="color" id="text-color" value="#ffffff" aria-label="Choose text color">
+            <div class="color-picker" id="text-color-picker" role="group" aria-label="Text color options">
+                <!-- Basic Colors -->
+                <div class="color-option" data-color="#ffffff" style="background-color: #ffffff;" role="button" aria-label="White" tabindex="0"></div>
+                <div class="color-option" data-color="#000000" style="background-color: #000000;" role="button" aria-label="Black" tabindex="0"></div>
+                <div class="color-option" data-color="#ff0000" style="background-color: #ff0000;" role="button" aria-label="Red" tabindex="0"></div>
+                <div class="color-option" data-color="#00ff00" style="background-color: #00ff00;" role="button" aria-label="Green" tabindex="0"></div>
+                <div class="color-option" data-color="#0000ff" style="background-color: #0000ff;" role="button" aria-label="Blue" tabindex="0":></div>
+                <div class="color-option" data-color="#ffff00" style="background-color: #ffff00;" role="button" aria-label="Yellow" tabindex="0"></div>
+                <div class="color-option" data-color="#ff00ff" style="background-color: #ff00ff;" role="button" aria-label="Magenta" tabindex="0"></div>
+                <div class="color-option" data-color="#00ffff" style="background-color: #00ffff;" role="button" aria-label="Cyan" tabindex="0"></div>
+
+                <!-- Pastel Colors -->
+                <div class="color-option" data-color="#ffcccb" style="background-color: #ffcccb;" role="button" aria-label="Light Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#ffebcd" style="background-color: #ffebcd;" role="button" aria-label="Blanched Almond" tabindex="0"></div>
+                <div class="color-option" data-color="#d8bfd8" style="background-color: #d8bfd8;" role="button" aria-label="Thistle" tabindex="0"></div>
+                <div class="color-option" data-color="#b0e0e6" style="background-color: #b0e0e6;" role="button" aria-label="Powder Blue" tabindex="0"></div>
+                <div class="color-option" data-color="#f0e68c" style="background-color: #f0e68c;" role="button" aria-label="Khaki" tabindex="0"></div>
+                <div class="color-option" data-color="#98fb98" style="background-color: #98fb98;" role="button" aria-label="Pale Green" tabindex="0"></div>
+                <div class="color-option" data-color="#ffb6c1" style="background-color: #ffb6c1;" role="button" aria-label="Light Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#add8e6" style="background-color: #add8e6;" role="button" aria-label="Light Blue" tabindex="0"></div>
+
+                <!-- Neon Colors -->
+                <div class="color-option" data-color="#ff007f" style="background-color: #ff007f;" role="button" aria-label="Bright Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#00ff7f" style="background-color: #00ff7f;" role="button" aria-label="Spring Green" tabindex="0"></div>
+                <div class="color-option" data-color="#7f00ff" style="background-color: #7f00ff;" role="button" aria-label="Violet" tabindex="0"></div>
+                <div class="color-option" data-color="#ff7f00" style="background-color: #ff7f00;" role="button" aria-label="Orange" tabindex="0"></div>
+                <div class="color-option" data-color="#7fff00" style="background-color: #7fff00;" role="button" aria-label="Chartreuse" tabindex="0"></div>
+                <div class="color-option" data-color="#00ffff" style="background-color: #00ffff;" role="button" aria-label="Cyan" tabindex="0"></div>
+                <div class="color-option" data-color="#ff00ff" style="background-color: #ff00ff;" role="button" aria-label="Magenta" tabindex="0"></div>
+                <div class="color-option" data-color="#ffff00" style="background-color: #ffff00;" role="button" aria-label="Yellow" tabindex="0"></div>
+            </div>
 
             <label for="outline-color">Outline Color:</label>
-            <input type="color" id="outline-color" value="#000000" aria-label="Choose outline color">
+            <div class="color-picker" id="outline-color-picker" role="group" aria-label="Outline color options">
+                <!-- Basic Colors -->
+                <div class="color-option" data-color="#ffffff" style="background-color: #ffffff;" role="button" aria-label="White" tabindex="0"></div>
+                <div class="color-option" data-color="#000000" style="background-color: #000000;" role="button" aria-label="Black" tabindex="0"></div>
+                <div class="color-option" data-color="#ff0000" style="background-color: #ff0000;" role="button" aria-label="Red" tabindex="0"></div>
+                <div class="color-option" data-color="#00ff00" style="background-color: #00ff00;" role="button" aria-label="Green" tabindex="0"></div>
+                <div class="color-option" data-color="#0000ff" style="background-color: #0000ff;" role="button" aria-label="Blue" tabindex="0"></div>
+                <div class="color-option" data-color="#ffff00" style="background-color: #ffff00;" role="button" aria-label="Yellow" tabindex="0"></div>
+                <div class="color-option" data-color="#ff00ff" style="background-color: #ff00ff;" role="button" aria-label="Magenta" tabindex="0"></div>
+                <div class="color-option" data-color="#00ffff" style="background-color: #00ffff;" role="button" aria-label="Cyan" tabindex="0"></div>
+
+                <!-- Pastel Colors -->
+                <div class="color-option" data-color="#ffcccb" style="background-color: #ffcccb;" role="button" aria-label="Light Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#ffebcd" style="background-color: #ffebcd;" role="button" aria-label="Blanched Almond" tabindex="0"></div>
+                <div class="color-option" data-color="#d8bfd8" style="background-color: #d8bfd8;" role="button" aria-label="Thistle" tabindex="0"></div>
+                <div class="color-option" data-color="#b0e0e6" style="background-color: #b0e0e6;" role="button" aria-label="Powder Blue" tabindex="0"></div>
+                <div class="color-option" data-color="#f0e68c" style="background-color: #f0e68c;" role="button" aria-label="Khaki" tabindex="0"></div>
+                <div class="color-option" data-color="#98fb98" style="background-color: #98fb98;" role="button" aria-label="Pale Green" tabindex="0"></div>
+                <div class="color-option" data-color="#ffb6c1" style="background-color: #ffb6c1;" role="button" aria-label="Light Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#add8e6" style="background-color: #add8e6;" role="button" aria-label="Light Blue" tabindex="0"></div>
+
+                <!-- Neon Colors -->
+                <div class="color-option" data-color="#ff007f" style="background-color: #ff007f;" role="button" aria-label="Bright Pink" tabindex="0"></div>
+                <div class="color-option" data-color="#00ff7f" style="background-color: #00ff7f;" role="button" aria-label="Spring Green" tabindex="0"></div>
+                <div class="color-option" data-color="#7f00ff" style="background-color: #7f00ff;" role="button" aria-label="Violet" tabindex="0"></div>
+                <div class="color-option" data-color="#ff7f00" style="background-color: #ff7f00;" role="button" aria-label="Orange" tabindex="0"></div>
+                <div class="color-option" data-color="#7fff00" style="background-color: #7fff00;" role="button" aria-label="Chartreuse" tabindex="0"></div>
+                <div class="color-option" data-color="#00ffff" style="background-color: #00ffff;" role="button" aria-label="Cyan" tabindex="0"></div>
+                <div class="color-option" data-color="#ff00ff" style="background-color: #ff00ff;" role="button" aria-label="Magenta" tabindex="0"></div>
+                <div class="color-option" data-color="#ffff00" style="background-color: #ffff00;" role="button" aria-label="Yellow" tabindex="0"></div>
+            </div>
 
             <label for="outline-thickness">Outline Thickness:</label>
-            <input type="range" id="outline-thickness" min="1" max="5" value="1" aria-label="Adjust outline thickness">
+            <input type="range" id="outline-thickness" min="1" max="5" value="1" aria-label="Adjust outline thickness in pixels">
+
+            <button id="save-palette">Save Palette</button>
+            <select id="palette-selector" aria-label="Select saved palette">
+                <option value="">Load Palette</option>
+            </select>
+            <button id="delete-palette">Delete Palette</button>
         </div>
     </div>
 
     <div class="chat">
-        <ul role="list"></ul>
+        <ul></ul>
     </div>
 
     <script>
         const chatList = document.querySelector('.chat ul');
-        const messageDuration = 30000; // 30 seconds in milliseconds
+        const messageDuration = 20000; // 20 seconds in milliseconds
 
         // Customization controls
         const controls = document.querySelector('.controls');
         const controlsHeading = document.getElementById('controls-heading');
         const controlsContent = document.querySelector('.controls-content');
-        const textColorInput = document.getElementById('text-color');
-        const outlineColorInput = document.getElementById('outline-color');
         const outlineThicknessInput = document.getElementById('outline-thickness');
+        const savePaletteButton = document.getElementById('save-palette');
+        const paletteSelector = document.getElementById('palette-selector');
+        const deletePaletteButton = document.getElementById('delete-palette');
 
         // Load preferences from localStorage
         function loadPreferences() {
+            if (!localStorage) {
+                console.error("localStorage is not available.");
+                return;
+            }
+
             const savedTextColor = localStorage.getItem('textColor');
             const savedOutlineColor = localStorage.getItem('outlineColor');
             const savedOutlineThickness = localStorage.getItem('outlineThickness');
 
-            if (savedTextColor) textColorInput.value = savedTextColor;
-            if (savedOutlineColor) outlineColorInput.value = savedOutlineColor;
-            if (savedOutlineThickness) outlineThicknessInput.value = savedOutlineThickness;
-
-            updateStyles();
+            if (savedTextColor) {
+                document.documentElement.style.setProperty('--text-color', savedTextColor);
+            }
+            if (savedOutlineColor) {
+                document.documentElement.style.setProperty('--outline-color', savedOutlineColor);
+            }
+            if (savedOutlineThickness) {
+                document.documentElement.style.setProperty('--outline-thickness', `${savedOutlineThickness}px`);
+            }
         }
 
         // Save preferences to localStorage
         function savePreferences() {
-            localStorage.setItem('textColor', textColorInput.value);
-            localStorage.setItem('outlineColor', outlineColorInput.value);
-            localStorage.setItem('outlineThickness', outlineThicknessInput.value);
+            if (!localStorage) {
+                console.error("localStorage is not available.");
+                return;
+            }
+
+            const textColor = document.documentElement.style.getPropertyValue('--text-color');
+            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
+            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
+
+            localStorage.setItem('textColor', textColor);
+            localStorage.setItem('outlineColor', outlineColor);
+            localStorage.setItem('outlineThickness', outlineThickness.replace('px', ''));
         }
 
         // Update styles based on user preferences
         function updateStyles() {
-            const textColor = textColorInput.value;
-            const outlineColor = outlineColorInput.value;
-            const outlineThickness = outlineThicknessInput.value;
+            const textColor = document.documentElement.style.getPropertyValue('--text-color');
+            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
+            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
 
-            // Apply styles to all existing messages
-            document.querySelectorAll('.chat li .username, .chat li .message').forEach(element => {
+            // Apply styles to all relevant elements
+            document.querySelectorAll('.chat li .username, .chat li .message, .controls h2, .controls label').forEach(element => {
                 element.style.color = textColor;
-                element.style.webkitTextStroke = `${outlineThickness}px ${outlineColor}`;
-                element.style.textStroke = `${outlineThickness}px ${outlineColor}`;
             });
         }
 
         // Load preferences when the page loads
-        window.addEventListener('load', loadPreferences);
+        window.addEventListener('load', () => {
+            loadPreferences();
+            updateStyles();
+            updatePaletteSelector(); // Initialize palette selector
+        });
 
-        // Combined event listeners for controls
-        [textColorInput, outlineColorInput, outlineThicknessInput].forEach(input => {
-            input.addEventListener('input', () => {
+        // Add event listeners for custom color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const color = e.target.getAttribute('data-color');
+                const pickerId = e.target.parentElement.id;
+
+                if (pickerId === 'text-color-picker') {
+                    document.documentElement.style.setProperty('--text-color', color);
+                } else if (pickerId === 'outline-color-picker') {
+                    document.documentElement.style.setProperty('--outline-color', color);
+                }
+
                 updateStyles();
                 savePreferences();
             });
+
+            // Enable keyboard interaction for color options
+            option.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.target.click();
+                }
+            });
+        });
+
+        // Outline thickness input
+        outlineThicknessInput.addEventListener('input', () => {
+            document.documentElement.style.setProperty('--outline-thickness', `${outlineThicknessInput.value}px`);
+            updateStyles();
+            savePreferences();
         });
 
         // Toggle collapsible menu
@@ -332,28 +499,89 @@
             }
         });
 
+        // Save palette
+        savePaletteButton.addEventListener('click', () => {
+            const paletteName = prompt('Enter a name for this palette:');
+            if (paletteName) {
+                const palette = {
+                    textColor: document.documentElement.style.getPropertyValue('--text-color'),
+                    outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
+                    outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
+                };
+                localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
+                updatePaletteSelector();
+            }
+        });
+
+        // Load palette
+        paletteSelector.addEventListener('change', (e) => {
+            const paletteName = e.target.value;
+            if (paletteName) {
+                const palette = JSON.parse(localStorage.getItem(`palette-${paletteName}`));
+                document.documentElement.style.setProperty('--text-color', palette.textColor);
+                document.documentElement.style.setProperty('--outline-color', palette.outlineColor);
+                document.documentElement.style.setProperty('--outline-thickness', palette.outlineThickness);
+                updateStyles();
+            }
+        });
+
+        // Delete palette
+        deletePaletteButton.addEventListener('click', () => {
+            const paletteName = prompt('Enter the name of the palette to delete:');
+            if (paletteName && localStorage.getItem(`palette-${paletteName}`)) {
+                localStorage.removeItem(`palette-${paletteName}`);
+                updatePaletteSelector();
+                alert(`Palette "${paletteName}" has been deleted.`);
+            } else {
+                alert(`Palette "${paletteName}" not found.`);
+            }
+        });
+
+        // Update palette selector
+        function updatePaletteSelector() {
+            paletteSelector.innerHTML = '<option value="">Load Palette</option>';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('palette-')) {
+                    const paletteName = key.replace('palette-', '');
+                    const option = document.createElement('option');
+                    option.value = paletteName;
+                    option.textContent = paletteName;
+                    paletteSelector.appendChild(option);
+                }
+            }
+        }
+
+        // Initialize palette selector
+        window.addEventListener('load', updatePaletteSelector);
+
         // Fetch BTTV and FFZ emotes for the channel
         async function fetchThirdPartyEmotes(channel) {
-            const [bttvResponse, ffzResponse] = await Promise.all([
-                fetch(`https://api.betterttv.net/3/cached/users/twitch/${channel}`).then(res => res.json()),
-                fetch(`https://api.frankerfacez.com/v1/room/${channel}`).then(res => res.json()),
-            ]);
+            try {
+                const [bttvResponse, ffzResponse] = await Promise.all([
+                    fetch(`https://api.betterttv.net/3/cached/users/twitch/${channel}`).then(res => res.json()),
+                    fetch(`https://api.frankerfacez.com/v1/room/${channel}`).then(res => res.json()),
+                ]);
 
-            const emotes = {};
+                const emotes = {};
 
-            // Add BTTV emotes
-            [...(bttvResponse.channelEmotes || []), ...(bttvResponse.sharedEmotes || [])].forEach(emote => {
-                emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
-            });
-
-            // Add FFZ emotes
-            if (ffzResponse.sets && ffzResponse.sets[ffzResponse.room.set]?.emoticons) {
-                ffzResponse.sets[ffzResponse.room.set].emoticons.forEach(emote => {
-                    emotes[emote.name] = `https://cdn.frankerfacez.com/emote/${emote.id}/1`;
+                // Add BTTV emotes
+                [...(bttvResponse.channelEmotes || []), ...(bttvResponse.sharedEmotes || [])].forEach(emote => {
+                    emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
                 });
-            }
 
-            return emotes;
+                // Add FFZ emotes
+                if (ffzResponse.sets && ffzResponse.sets[ffzResponse.room.set]?.emoticons) {
+                    ffzResponse.sets[ffzResponse.room.set].emoticons.forEach(emote => {
+                        emotes[emote.name] = `https://cdn.frankerfacez.com/emote/${emote.id}/1`;
+                    });
+                }
+
+                return emotes;
+            } catch (error) {
+                console.error('Failed to fetch third-party emotes:', error);
+                return {};
+            }
         }
 
         // Replace emote codes with images
@@ -361,23 +589,37 @@
             const messageParts = [];
             let lastIndex = 0;
 
-            // Combine and sort emotes
-            const allEmotes = { ...emotes, ...thirdPartyEmotes };
-            const sortedEmotes = Object.entries(allEmotes).flatMap(([emoteId, ranges]) =>
-                ranges.map(range => ({ emoteId, ...range }))
-            ).sort((a, b) => a.start - b.start);
+            // Parse Twitch emotes
+            if (emotes) {
+                Object.entries(emotes).forEach(([emoteId, ranges]) => {
+                    ranges.forEach(range => {
+                        const [start, end] = range.split('-').map(Number);
+                        if (start > lastIndex) {
+                            messageParts.push(document.createTextNode(message.slice(lastIndex, start)));
+                        }
+                        const emoteImg = document.createElement('img');
+                        emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
+                        emoteImg.alt = `Emote: ${message.slice(start, end + 1)}`;
+                        messageParts.push(emoteImg);
+                        lastIndex = end + 1;
+                    });
+                });
+            }
 
-            sortedEmotes.forEach(({ emoteId, start, end }) => {
-                if (start > lastIndex) {
-                    messageParts.push(document.createTextNode(message.slice(lastIndex, start)));
+            // Parse third-party emotes
+            Object.entries(thirdPartyEmotes).forEach(([emoteCode, emoteUrl]) => {
+                const regex = new RegExp(`\\b${emoteCode}\\b`, 'g');
+                let match;
+                while ((match = regex.exec(message)) !== null) {
+                    if (match.index > lastIndex) {
+                        messageParts.push(document.createTextNode(message.slice(lastIndex, match.index)));
+                    }
+                    const emoteImg = document.createElement('img');
+                    emoteImg.src = emoteUrl;
+                    emoteImg.alt = `Emote: ${emoteCode}`;
+                    messageParts.push(emoteImg);
+                    lastIndex = match.index + emoteCode.length;
                 }
-
-                const emoteImg = document.createElement('img');
-                emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
-                emoteImg.alt = `Emote: ${message.slice(start, end + 1)}`;
-                messageParts.push(emoteImg);
-
-                lastIndex = end + 1;
             });
 
             if (lastIndex < message.length) {
@@ -430,10 +672,10 @@
 
             // Limit to 6 messages
             if (chatList.children.length > 6) {
-                chatList.removeChild(chatList.firstChild);
+                chatList.removeChild(chatList.lastChild);
             }
 
-            // Remove the message after 30 seconds
+            // Remove the message after the time set on line 383 (default is 20 seconds)
             setTimeout(() => {
                 if (newMessage.parentElement) {
                     newMessage.remove();
