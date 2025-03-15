@@ -384,7 +384,7 @@
 
     <script>
         const chatList = document.querySelector('.chat ul');
-        const messageDuration = 25000; // 25 seconds in milliseconds, allows 20 seconds message duration and allows the exit animation to play
+        const messageDuration = 21000; // 21 seconds in milliseconds, allows 20 seconds message duration and allows the exit animation to play
 
         // Customization controls
         const controls = document.querySelector('.controls');
@@ -721,7 +721,7 @@
                 chatList.removeChild(chatList.lastChild);
             }
 
-            // Remove the message after the time set on line 383 (default is 25 seconds)
+            // Remove the message after the time set on line 383 (default is 21 seconds)
             setTimeout(() => {
                 if (newMessage.parentElement) {
                     newMessage.remove();
