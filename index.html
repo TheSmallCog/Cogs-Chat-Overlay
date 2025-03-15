@@ -384,7 +384,7 @@
 
     <script>
         const chatList = document.querySelector('.chat ul');
-        const messageDuration = 20000; // 20 seconds in milliseconds
+        const messageDuration = 25000; // 25 seconds in milliseconds, allows 20 seconds message duration and allows the exit animation to play
 
         // Customization controls
         const controls = document.querySelector('.controls');
@@ -508,7 +508,8 @@
                     outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
                     outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
                 };
-                localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
+            localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
+            console.log(`Palette "${paletteName}" saved:`, palette);
                 updatePaletteSelector();
             }
         });
@@ -675,7 +676,7 @@
                 chatList.removeChild(chatList.lastChild);
             }
 
-            // Remove the message after the time set on line 383 (default is 20 seconds)
+            // Remove the message after the time set on line 383 (default is 25 seconds)
             setTimeout(() => {
                 if (newMessage.parentElement) {
                     newMessage.remove();
