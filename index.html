@@ -395,49 +395,99 @@
         const paletteSelector = document.getElementById('palette-selector');
         const deletePaletteButton = document.getElementById('delete-palette');
 
-        // Load preferences from localStorage
-        function loadPreferences() {
-            if (!localStorage) {
-                console.error("localStorage is not available.");
-                return;
+        // Open or create an IndexedDB database
+        const openDB = () => {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('TwitchOverlayDB', 1);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('palettes')) {
+                        db.createObjectStore('palettes', { keyPath: 'name' });
+                    }
+                };
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => reject(event.target.error);
+            });
+        };
+
+        // Save palette to IndexedDB
+        savePaletteButton.addEventListener('click', async () => {
+            const paletteName = prompt('Enter a name for this palette:');
+            if (paletteName) {
+                const palette = {
+                    name: paletteName,
+                    textColor: document.documentElement.style.getPropertyValue('--text-color'),
+                    outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
+                    outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
+                };
+                const db = await openDB();
+                const transaction = db.transaction('palettes', 'readwrite');
+                const store = transaction.objectStore('palettes');
+                store.put(palette);
+                console.log(`Palette "${paletteName}" saved.`);
+                updatePaletteSelector();
             }
+        });
 
-            const savedTextColor = localStorage.getItem('textColor');
-            const savedOutlineColor = localStorage.getItem('outlineColor');
-            const savedOutlineThickness = localStorage.getItem('outlineThickness');
-
-            if (savedTextColor) {
-                document.documentElement.style.setProperty('--text-color', savedTextColor);
+        // Load palette from IndexedDB
+        paletteSelector.addEventListener('change', async (e) => {
+            const paletteName = e.target.value;
+            if (paletteName) {
+                const db = await openDB();
+                const transaction = db.transaction('palettes', 'readonly');
+                const store = transaction.objectStore('palettes');
+                const request = store.get(paletteName);
+                request.onsuccess = () => {
+                    const palette = request.result;
+                    if (palette) {
+                        document.documentElement.style.setProperty('--text-color', palette.textColor);
+                        document.documentElement.style.setProperty('--outline-color', palette.outlineColor);
+                        document.documentElement.style.setProperty('--outline-thickness', palette.outlineThickness);
+                        console.log(`Palette "${paletteName}" loaded.`);
+                        updateStyles();
+                    } else {
+                        console.error(`Palette "${paletteName}" not found.`);
+                    }
+                };
             }
-            if (savedOutlineColor) {
-                document.documentElement.style.setProperty('--outline-color', savedOutlineColor);
+        });
+
+        // Delete palette from IndexedDB
+        deletePaletteButton.addEventListener('click', async () => {
+            const paletteName = prompt('Enter the name of the palette to delete:');
+            if (paletteName) {
+                const db = await openDB();
+                const transaction = db.transaction('palettes', 'readwrite');
+                const store = transaction.objectStore('palettes');
+                const request = store.delete(paletteName);
+                request.onsuccess = () => {
+                console.log(`Palette "${paletteName}" deleted.`);
+                updatePaletteSelector();
+                alert(`Palette "${paletteName}" has been deleted.`);
+                };
+                request.onerror = () => {
+                console.error(`Palette "${paletteName}" not found.`);
+                alert(`Palette "${paletteName}" not found.`);
+                };
             }
-            if (savedOutlineThickness) {
-                document.documentElement.style.setProperty('--outline-thickness', `${savedOutlineThickness}px`);
-            }
-        }
+        });
 
-        // Save preferences to localStorage
-        function savePreferences() {
-            if (!localStorage) {
-                console.error("localStorage is not available.");
-                return;
-            }
-
-            const textColor = document.documentElement.style.getPropertyValue('--text-color');
-            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
-            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
-
-            localStorage.setItem('textColor', textColor);
-            localStorage.setItem('outlineColor', outlineColor);
-            localStorage.setItem('outlineThickness', outlineThickness.replace('px', ''));
-        }
-
-        // Update styles based on user preferences
-        function updateStyles() {
-            const textColor = document.documentElement.style.getPropertyValue('--text-color');
-            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
-            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
+        // Update palette selector with data from IndexedDB
+        const updatePaletteSelector = async () => {
+            const db = await openDB();
+            const transaction = db.transaction('palettes', 'readonly');
+            const store = transaction.objectStore('palettes');
+            const request = store.getAll();
+            request.onsuccess = () => {
+                paletteSelector.innerHTML = '<option value="">Load Palette</option>';
+            request.result.forEach(palette => {
+                const option = document.createElement('option');
+                option.value = palette.name;
+                option.textContent = palette.name;
+                paletteSelector.appendChild(option);
+                });
+            };
+        };
 
             // Apply styles to all relevant elements
             document.querySelectorAll('.chat li .username, .chat li .message, .controls h2, .controls label').forEach(element => {
@@ -449,7 +499,7 @@
         window.addEventListener('load', () => {
             loadPreferences();
             updateStyles();
-            updatePaletteSelector(); // Initialize palette selector
+            updatePaletteSelector();
         });
 
         // Add event listeners for custom color picker
@@ -468,10 +518,10 @@
                 savePreferences();
             });
 
-            // Enable keyboard interaction for color options
-            option.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.target.click();
+        // Enable keyboard interaction for color options
+        option.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
                 }
             });
         });
@@ -498,60 +548,6 @@
                 controlsHeading.setAttribute('aria-expanded', isExpanded);
             }
         });
-
-        // Save palette
-        savePaletteButton.addEventListener('click', () => {
-            const paletteName = prompt('Enter a name for this palette:');
-            if (paletteName) {
-                const palette = {
-                    textColor: document.documentElement.style.getPropertyValue('--text-color'),
-                    outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
-                    outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
-                };
-            localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
-            console.log(`Palette "${paletteName}" saved:`, palette);
-                updatePaletteSelector();
-            }
-        });
-
-        // Load palette
-        paletteSelector.addEventListener('change', (e) => {
-            const paletteName = e.target.value;
-            if (paletteName) {
-                const palette = JSON.parse(localStorage.getItem(`palette-${paletteName}`));
-                document.documentElement.style.setProperty('--text-color', palette.textColor);
-                document.documentElement.style.setProperty('--outline-color', palette.outlineColor);
-                document.documentElement.style.setProperty('--outline-thickness', palette.outlineThickness);
-                updateStyles();
-            }
-        });
-
-        // Delete palette
-        deletePaletteButton.addEventListener('click', () => {
-            const paletteName = prompt('Enter the name of the palette to delete:');
-            if (paletteName && localStorage.getItem(`palette-${paletteName}`)) {
-                localStorage.removeItem(`palette-${paletteName}`);
-                updatePaletteSelector();
-                alert(`Palette "${paletteName}" has been deleted.`);
-            } else {
-                alert(`Palette "${paletteName}" not found.`);
-            }
-        });
-
-        // Update palette selector
-        function updatePaletteSelector() {
-            paletteSelector.innerHTML = '<option value="">Load Palette</option>';
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('palette-')) {
-                    const paletteName = key.replace('palette-', '');
-                    const option = document.createElement('option');
-                    option.value = paletteName;
-                    option.textContent = paletteName;
-                    paletteSelector.appendChild(option);
-                }
-            }
-        }
 
         // Initialize palette selector
         window.addEventListener('load', updatePaletteSelector);
