@@ -54,7 +54,7 @@
             border-radius: 8px;
             background-clip: padding-box;
             animation: slide-in-left 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55),
-                       slide-out-left 0.5s 20s ease-in forwards;
+                       slide-out-left 0.5s 25s ease-in forwards;
             border: 4px solid transparent;
             background-origin: border-box;
             font-size: 1.25rem;
@@ -165,6 +165,15 @@
             }
         }
 
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .chat li.fade-out {
+            animation: slide-out-left 0.5s ease-out forwards; 
+        }
+        
         /* Customization controls */
         .controls {
             position: absolute;
@@ -382,290 +391,314 @@
     </div>
 
     <script>
-        const chatList = document.querySelector('.chat ul');
-        const messageDuration = 30000; // 30 seconds in milliseconds
+    const chatList = document.querySelector('.chat ul');
+    const messageDuration = 25500; // 25.5 seconds in milliseconds
 
-        // Customization controls
-        const controls = document.querySelector('.controls');
-        const controlsHeading = document.getElementById('controls-heading');
-        const controlsContent = document.querySelector('.controls-content');
-        const outlineThicknessInput = document.getElementById('outline-thickness');
-        const savePaletteButton = document.getElementById('save-palette');
-        const paletteSelector = document.getElementById('palette-selector');
-        const deletePaletteButton = document.getElementById('delete-palette');
+    // Customization controls
+    const controls = document.querySelector('.controls');
+    const controlsHeading = document.getElementById('controls-heading');
+    const controlsContent = document.querySelector('.controls-content');
+    const outlineThicknessInput = document.getElementById('outline-thickness');
+    const savePaletteButton = document.getElementById('save-palette');
+    const paletteSelector = document.getElementById('palette-selector');
+    const deletePaletteButton = document.getElementById('delete-palette');
 
-        // Load preferences from localStorage
-        function loadPreferences() {
-            const savedTextColor = localStorage.getItem('textColor');
-            const savedOutlineColor = localStorage.getItem('outlineColor');
-            const savedOutlineThickness = localStorage.getItem('outlineThickness');
+    // Load preferences from localStorage
+    function loadPreferences() {
+        const savedTextColor = localStorage.getItem('textColor');
+        const savedOutlineColor = localStorage.getItem('outlineColor');
+        const savedOutlineThickness = localStorage.getItem('outlineThickness');
 
-            if (savedTextColor) {
-                document.documentElement.style.setProperty('--text-color', savedTextColor);
-            }
-            if (savedOutlineColor) {
-                document.documentElement.style.setProperty('--outline-color', savedOutlineColor);
-            }
-            if (savedOutlineThickness) {
-                document.documentElement.style.setProperty('--outline-thickness', `${savedOutlineThickness}px`);
-            }
+        if (savedTextColor) {
+            document.documentElement.style.setProperty('--text-color', savedTextColor);
         }
-
-        // Save preferences to localStorage
-        function savePreferences() {
-            const textColor = document.documentElement.style.getPropertyValue('--text-color');
-            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
-            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
-
-            localStorage.setItem('textColor', textColor);
-            localStorage.setItem('outlineColor', outlineColor);
-            localStorage.setItem('outlineThickness', outlineThickness.replace('px', ''));
+        if (savedOutlineColor) {
+            document.documentElement.style.setProperty('--outline-color', savedOutlineColor);
         }
-
-        // Update styles based on user preferences
-        function updateStyles() {
-            const textColor = document.documentElement.style.getPropertyValue('--text-color');
-            const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
-            const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
-
-            // Apply styles to all relevant elements
-            document.querySelectorAll('.chat li .username, .chat li .message, .controls h2, .controls label').forEach(element => {
-                element.style.color = textColor;
-            });
+        if (savedOutlineThickness) {
+            document.documentElement.style.setProperty('--outline-thickness', `${savedOutlineThickness}px`);
         }
+    }
 
-        // Load preferences when the page loads
-        window.addEventListener('load', () => {
-            loadPreferences();
-            updateStyles();
-            updatePaletteSelector(); // Initialize palette selector
+    // Save preferences to localStorage
+    function savePreferences() {
+        const textColor = document.documentElement.style.getPropertyValue('--text-color');
+        const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
+        const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
+
+        localStorage.setItem('textColor', textColor);
+        localStorage.setItem('outlineColor', outlineColor);
+        localStorage.setItem('outlineThickness', outlineThickness.replace('px', ''));
+    }
+
+    // Update styles based on user preferences
+    function updateStyles() {
+        const textColor = document.documentElement.style.getPropertyValue('--text-color');
+        const outlineColor = document.documentElement.style.getPropertyValue('--outline-color');
+        const outlineThickness = document.documentElement.style.getPropertyValue('--outline-thickness');
+
+        // Apply styles to all relevant elements
+        document.querySelectorAll('.chat li .username, .chat li .message, .controls h2, .controls label').forEach(element => {
+            element.style.color = textColor;
+            element.style.webkitTextStroke = `${outlineThickness} ${outlineColor}`;
+            element.style.textStroke = `${outlineThickness} ${outlineColor}`;
         });
+    }
 
-        // Add event listeners for custom color picker
-        document.querySelectorAll('.color-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                const color = e.target.getAttribute('data-color');
-                const pickerId = e.target.parentElement.id;
+    // Load preferences when the page loads
+    window.addEventListener('load', () => {
+        loadPreferences();
+        updateStyles();
+        updatePaletteSelector(); // Initialize palette selector
+    });
 
-                if (pickerId === 'text-color-picker') {
-                    document.documentElement.style.setProperty('--text-color', color);
-                } else if (pickerId === 'outline-color-picker') {
-                    document.documentElement.style.setProperty('--outline-color', color);
-                }
+    // Add event listeners for custom color picker
+    document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const color = e.target.getAttribute('data-color');
+            const pickerId = e.target.parentElement.id;
 
-                updateStyles();
-                savePreferences();
-            });
-        });
+            if (pickerId === 'text-color-picker') {
+                document.documentElement.style.setProperty('--text-color', color);
+            } else if (pickerId === 'outline-color-picker') {
+                document.documentElement.style.setProperty('--outline-color', color);
+            }
 
-        // Outline thickness input
-        outlineThicknessInput.addEventListener('input', () => {
-            document.documentElement.style.setProperty('--outline-thickness', `${outlineThicknessInput.value}px`);
             updateStyles();
             savePreferences();
         });
+    });
 
-        // Toggle collapsible menu
-        controlsHeading.addEventListener('click', () => {
+    // Outline thickness input
+    outlineThicknessInput.addEventListener('input', () => {
+        document.documentElement.style.setProperty('--outline-thickness', `${outlineThicknessInput.value}px`);
+        updateStyles();
+        savePreferences();
+    });
+
+    // Toggle collapsible menu
+    controlsHeading.addEventListener('click', () => {
+        controls.classList.toggle('collapsed');
+        const isExpanded = controls.classList.contains('collapsed') ? 'false' : 'true';
+        controlsHeading.setAttribute('aria-expanded', isExpanded);
+    });
+
+    // Allow keyboard interaction for accessibility
+    controlsHeading.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
             controls.classList.toggle('collapsed');
             const isExpanded = controls.classList.contains('collapsed') ? 'false' : 'true';
             controlsHeading.setAttribute('aria-expanded', isExpanded);
-        });
+        }
+    });
 
-        // Allow keyboard interaction for accessibility
-        controlsHeading.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                controls.classList.toggle('collapsed');
-                const isExpanded = controls.classList.contains('collapsed') ? 'false' : 'true';
-                controlsHeading.setAttribute('aria-expanded', isExpanded);
-            }
-        });
+    // Save palette
+    savePaletteButton.addEventListener('click', () => {
+        const paletteName = prompt('Enter a name for this palette:');
+        if (paletteName) {
+            const palette = {
+                textColor: document.documentElement.style.getPropertyValue('--text-color'),
+                outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
+                outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
+            };
+            localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
+            updatePaletteSelector();
+        }
+    });
 
-        // Save palette
-        savePaletteButton.addEventListener('click', () => {
-            const paletteName = prompt('Enter a name for this palette:');
-            if (paletteName) {
-                const palette = {
-                    textColor: document.documentElement.style.getPropertyValue('--text-color'),
-                    outlineColor: document.documentElement.style.getPropertyValue('--outline-color'),
-                    outlineThickness: document.documentElement.style.getPropertyValue('--outline-thickness'),
-                };
-                localStorage.setItem(`palette-${paletteName}`, JSON.stringify(palette));
-                updatePaletteSelector();
-            }
-        });
+    // Load palette
+    paletteSelector.addEventListener('change', (e) => {
+        const paletteName = e.target.value;
+        if (paletteName) {
+            const palette = JSON.parse(localStorage.getItem(`palette-${paletteName}`));
+            document.documentElement.style.setProperty('--text-color', palette.textColor);
+            document.documentElement.style.setProperty('--outline-color', palette.outlineColor);
+            document.documentElement.style.setProperty('--outline-thickness', palette.outlineThickness);
+            updateStyles();
+        }
+    });
 
-        // Load palette
-        paletteSelector.addEventListener('change', (e) => {
-            const paletteName = e.target.value;
-            if (paletteName) {
-                const palette = JSON.parse(localStorage.getItem(`palette-${paletteName}`));
-                document.documentElement.style.setProperty('--text-color', palette.textColor);
-                document.documentElement.style.setProperty('--outline-color', palette.outlineColor);
-                document.documentElement.style.setProperty('--outline-thickness', palette.outlineThickness);
-                updateStyles();
-            }
-        });
+    // Delete palette
+    deletePaletteButton.addEventListener('click', () => {
+        const paletteName = prompt('Enter the name of the palette to delete:');
+        if (paletteName && localStorage.getItem(`palette-${paletteName}`)) {
+            localStorage.removeItem(`palette-${paletteName}`);
+            updatePaletteSelector();
+            alert(`Palette "${paletteName}" has been deleted.`);
+        } else {
+            alert(`Palette "${paletteName}" not found.`);
+        }
+    });
 
-        // Delete palette
-        deletePaletteButton.addEventListener('click', () => {
-            const paletteName = prompt('Enter the name of the palette to delete:');
-            if (paletteName && localStorage.getItem(`palette-${paletteName}`)) {
-                localStorage.removeItem(`palette-${paletteName}`);
-                updatePaletteSelector();
-                alert(`Palette "${paletteName}" has been deleted.`);
-            } else {
-                alert(`Palette "${paletteName}" not found.`);
-            }
-        });
-
-        // Update palette selector
-        function updatePaletteSelector() {
-            paletteSelector.innerHTML = '<option value="">Load Palette</option>';
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('palette-')) {
-                    const paletteName = key.replace('palette-', '');
-                    const option = document.createElement('option');
-                    option.value = paletteName;
-                    option.textContent = paletteName;
-                    paletteSelector.appendChild(option);
-                }
+    // Update palette selector
+    function updatePaletteSelector() {
+        paletteSelector.innerHTML = '<option value="">Load Palette</option>';
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('palette-')) {
+                const paletteName = key.replace('palette-', '');
+                const option = document.createElement('option');
+                option.value = paletteName;
+                option.textContent = paletteName;
+                paletteSelector.appendChild(option);
             }
         }
+    }
 
-        // Initialize palette selector
-        window.addEventListener('load', updatePaletteSelector);
+    // Initialize palette selector
+    window.addEventListener('load', updatePaletteSelector);
 
-        // Fetch BTTV and FFZ emotes for the channel
-        async function fetchThirdPartyEmotes(channel) {
-            try {
-                const [bttvResponse, ffzResponse] = await Promise.all([
-                    fetch(`https://api.betterttv.net/3/cached/users/twitch/${channel}`).then(res => res.json()),
-                    fetch(`https://api.frankerfacez.com/v1/room/${channel}`).then(res => res.json()),
-                ]);
+    // Fetch BTTV and FFZ emotes for the channel
+    async function fetchThirdPartyEmotes(channel) {
+        try {
+            const [bttvResponse, ffzResponse] = await Promise.all([
+                fetch(`https://api.betterttv.net/3/cached/users/twitch/${channel}`).then(res => res.json()),
+                fetch(`https://api.frankerfacez.com/v1/room/${channel}`).then(res => res.json()),
+            ]);
 
-                const emotes = {};
+            const emotes = {};
 
-                // Add BTTV emotes
-                [...(bttvResponse.channelEmotes || []), ...(bttvResponse.sharedEmotes || [])].forEach(emote => {
-                    emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
-                });
-
-                // Add FFZ emotes
-                if (ffzResponse.sets && ffzResponse.sets[ffzResponse.room.set]?.emoticons) {
-                    ffzResponse.sets[ffzResponse.room.set].emoticons.forEach(emote => {
-                        emotes[emote.name] = `https://cdn.frankerfacez.com/emote/${emote.id}/1`;
-                    });
-                }
-
-                return emotes;
-            } catch (error) {
-                console.error('Failed to fetch third-party emotes:', error);
-                return {};
-            }
-        }
-
-        // Replace emote codes with images
-        function parseMessage(message, emotes, thirdPartyEmotes) {
-            const messageParts = [];
-            let lastIndex = 0;
-
-            // Parse Twitch emotes
-            if (emotes) {
-                Object.entries(emotes).forEach(([emoteId, ranges]) => {
-                    ranges.forEach(range => {
-                        const [start, end] = range.split('-').map(Number);
-                        if (start > lastIndex) {
-                            messageParts.push(document.createTextNode(message.slice(lastIndex, start)));
-                        }
-                        const emoteImg = document.createElement('img');
-                        emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
-                        emoteImg.alt = `Emote: ${message.slice(start, end + 1)}`;
-                        messageParts.push(emoteImg);
-                        lastIndex = end + 1;
-                    });
-                });
-            }
-
-            // Parse third-party emotes
-            Object.entries(thirdPartyEmotes).forEach(([emoteCode, emoteUrl]) => {
-                const regex = new RegExp(`\\b${emoteCode}\\b`, 'g');
-                let match;
-                while ((match = regex.exec(message)) !== null) {
-                    if (match.index > lastIndex) {
-                        messageParts.push(document.createTextNode(message.slice(lastIndex, match.index)));
-                    }
-                    const emoteImg = document.createElement('img');
-                    emoteImg.src = emoteUrl;
-                    emoteImg.alt = `Emote: ${emoteCode}`;
-                    messageParts.push(emoteImg);
-                    lastIndex = match.index + emoteCode.length;
-                }
+            // Add BTTV emotes
+            [...(bttvResponse.channelEmotes || []), ...(bttvResponse.sharedEmotes || [])].forEach(emote => {
+                emotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/1x`;
             });
 
-            if (lastIndex < message.length) {
-                messageParts.push(document.createTextNode(message.slice(lastIndex)));
+            // Add FFZ emotes
+            if (ffzResponse.sets && ffzResponse.sets[ffzResponse.room.set]?.emoticons) {
+                ffzResponse.sets[ffzResponse.room.set].emoticons.forEach(emote => {
+                    emotes[emote.name] = `https://cdn.frankerfacez.com/emote/${emote.id}/1`;
+                });
             }
 
-            return messageParts;
+            return emotes;
+        } catch (error) {
+            console.error('Failed to fetch third-party emotes:', error);
+            return {};
+        }
+    }
+
+    // Replace emote codes with images
+    function parseMessage(message, emotes, thirdPartyEmotes) {
+        const messageParts = [];
+        let lastIndex = 0;
+
+        // Parse Twitch emotes
+        if (emotes) {
+            Object.entries(emotes).forEach(([emoteId, ranges]) => {
+                ranges.forEach(range => {
+                    const [start, end] = range.split('-').map(Number);
+                    if (start > lastIndex) {
+                        messageParts.push(document.createTextNode(message.slice(lastIndex, start)));
+                    }
+                    const emoteImg = document.createElement('img');
+                    emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
+                    emoteImg.alt = `Emote: ${message.slice(start, end + 1)}`;
+                    messageParts.push(emoteImg);
+                    lastIndex = end + 1;
+                });
+            });
         }
 
-        // Initialize ComfyJS and fetch third-party emotes
-        let thirdPartyEmotes = {};
-
-        fetchThirdPartyEmotes('callmeCog').then(emotes => {
-            thirdPartyEmotes = emotes;
-        }).catch(error => {
-            console.error('Failed to fetch third-party emotes:', error);
+        // Parse third-party emotes
+        Object.entries(thirdPartyEmotes).forEach(([emoteCode, emoteUrl]) => {
+            const regex = new RegExp(`\\b${emoteCode}\\b`, 'g');
+            let match;
+            while ((match = regex.exec(message)) !== null) {
+                if (match.index > lastIndex) {
+                    messageParts.push(document.createTextNode(message.slice(lastIndex, match.index)));
+                }
+                const emoteImg = document.createElement('img');
+                emoteImg.src = emoteUrl;
+                emoteImg.alt = `Emote: ${emoteCode}`;
+                messageParts.push(emoteImg);
+                lastIndex = match.index + emoteCode.length;
+            }
         });
 
-        ComfyJS.onChat = (user, message, flags, self, extra) => {
-            const newMessage = document.createElement('li');
+        if (lastIndex < message.length) {
+            messageParts.push(document.createTextNode(message.slice(lastIndex)));
+        }
 
-            // Add classes based on user role
-            if (flags.broadcaster) {
-                newMessage.classList.add('streamer');
-            } else if (flags.mod) {
-                newMessage.classList.add('mod');
-            } else if (flags.subscriber) {
-                newMessage.classList.add('sub');
-            } else if (flags.follower) {
-                newMessage.classList.add('follower');
-            }
+        return messageParts;
+    }
 
-            // Create username and message elements
-            const username = document.createElement('div');
-            username.classList.add('username');
-            username.textContent = user;
+    // Initialize ComfyJS and fetch third-party emotes
+    let thirdPartyEmotes = {};
 
-            const messageText = document.createElement('div');
-            messageText.classList.add('message');
+    fetchThirdPartyEmotes('callmeCog').then(emotes => {
+        thirdPartyEmotes = emotes;
+    }).catch(error => {
+        console.error('Failed to fetch third-party emotes:', error);
+    });
 
-            // Parse emotes in the message
-            const messageParts = parseMessage(message, extra.emotes || {}, thirdPartyEmotes);
-            messageParts.forEach(part => messageText.appendChild(part));
+    // Function to add a new message
+    function addMessage(newMessage) {
+        // Check if there are already 6 messages
+        if (chatList.children.length >= 6) {
+            // Remove the oldest message (first child) immediately with slide-out-left animation
+            const oldestMessage = chatList.firstChild;
+            oldestMessage.classList.add('fade-out');
 
-            newMessage.append(username, messageText);
-            chatList.appendChild(newMessage);
-
-            // Apply current styles to the new message
-            updateStyles();
-
-            // Limit to 6 messages
-            if (chatList.children.length > 6) {
-                chatList.removeChild(chatList.lastChild);
-            }
-
-            // Remove the message after 30 seconds
+            // Remove the oldest message from the DOM after the animation completes
             setTimeout(() => {
-                if (newMessage.parentElement) {
-                    newMessage.remove();
+                if (oldestMessage.parentElement) {
+                    oldestMessage.remove();
                 }
-            }, messageDuration);
-        };
+            }, 500); // Match the duration of the slide-out-left animation
+        }
 
-        ComfyJS.Init('callmeCog');
-    </script>
+        // Add the new message to the chat list with slide-in-left animation
+        newMessage.style.animation = 'slide-in-left 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+        chatList.appendChild(newMessage);
+
+        // Remove the new message after 25.5 seconds with slide-out-left animation
+        setTimeout(() => {
+            if (newMessage.parentElement) {
+                newMessage.classList.add('fade-out');
+
+                // Remove the new message from the DOM after the animation completes
+                setTimeout(() => {
+                    if (newMessage.parentElement) {
+                        newMessage.remove();
+                    }
+                }, 500);
+            }
+        }, messageDuration);
+    }
+
+    // Handle incoming chat messages
+    ComfyJS.onChat = (user, message, flags, self, extra) => {
+        const newMessage = document.createElement('li');
+
+        // Add classes based on user role
+        if (flags.broadcaster) {
+            newMessage.classList.add('streamer');
+        } else if (flags.mod) {
+            newMessage.classList.add('mod');
+        } else if (flags.subscriber) {
+            newMessage.classList.add('sub');
+        } else if (flags.follower) {
+            newMessage.classList.add('follower');
+        }
+
+        // Create username and message elements
+        const username = document.createElement('div');
+        username.classList.add('username');
+        username.textContent = user;
+
+        const messageText = document.createElement('div');
+        messageText.classList.add('message');
+
+        // Parse emotes in the message
+        const messageParts = parseMessage(message, extra.emotes || {}, thirdPartyEmotes);
+        messageParts.forEach(part => messageText.appendChild(part));
+
+        newMessage.append(username, messageText);
+        addMessage(newMessage); // Add the new message to the chat list
+    };
+
+    // Initialize ComfyJS
+    ComfyJS.Init('callmeCog');
+</script>
 </body>
 </html>
