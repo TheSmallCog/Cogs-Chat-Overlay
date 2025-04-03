@@ -5,7 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
         :root {
             --text-stroke: 1px black;
@@ -16,25 +18,25 @@
         }
 
         html, body {
-            width: 100%;
+            width: 85%;
             height: 100%;
             margin: 0;
             background: rgba(0, 0, 0, 0);
             overflow: hidden;
-            font-family: 'Press Start 2P';
+            font-family: 'Public Sans', sans-serif;
         }
 
         .chat {
-            width: 90%;
-            height: 90vh;
-            padding: 10px;
+            width: 80%;
+            height: 90%;
+            padding: 8px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
         }
 
-        .chat ul {⚙️
+        .chat ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
@@ -47,10 +49,10 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 6px;
+            padding: 8px;
             width: fit-content;
-            max-width: 80%;
+            max-width: 75%;
             border-radius: 8px;
             background-clip: padding-box;
             animation: slide-in-left 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55),
@@ -127,10 +129,10 @@
             word-wrap: break-word;
         }
 
-        .chat li .message img {
+        .emote {
             vertical-align: middle;
-            height: 1.2em;
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.7));
+            height: 1.5em;
+            margin: 0 0.1em;
         }
 
         .chat li:nth-last-child(-n+3) {
@@ -171,9 +173,9 @@
         }
 
         .chat li.fade-out {
-            animation: slide-out-left 0.5s ease-out forwards; 
+            animation: slide-out-left 0.5s ease-out forwards;
         }
-        
+
         /* Customization controls */
         .controls {
             position: absolute;
@@ -186,12 +188,13 @@
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out, height 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
             width: 200px;
             height: auto;
+            overflow: hidden;
         }
 
-        .controls.collapsed {
+        .controls.collapsed { ⚙️
             width: 30px;
             height: 30px;
             padding: 5px;
@@ -476,16 +479,27 @@
         savePreferences();
     });
 
-    // Toggle collapsible menu
+    // Toggle handler
+    function toggleControls() {
+        controls.classList.toggle('collapsed');
+        const isCollapsed = controls.classList.contains('collapsed');
+        controlsHeading.setAttribute('aria-expanded', String(!isCollapsed));
+
+        // Force layout recalc if transitions glitch
+        void controls.offsetWidth;
+    }
+
+    // Click event
     controlsHeading.addEventListener('click', () => {
         controls.classList.toggle('collapsed');
         const isExpanded = controls.classList.contains('collapsed') ? 'false' : 'true';
         controlsHeading.setAttribute('aria-expanded', isExpanded);
     });
 
-    // Allow keyboard interaction for accessibility
+    // Keyboard functionality for customzation menu
     controlsHeading.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
             controls.classList.toggle('collapsed');
             const isExpanded = controls.classList.contains('collapsed') ? 'false' : 'true';
             controlsHeading.setAttribute('aria-expanded', isExpanded);
@@ -549,11 +563,11 @@
     window.addEventListener('load', updatePaletteSelector);
 
     // Fetch BTTV and FFZ emotes for the channel
-    async function fetchThirdPartyEmotes(channel) {
+    async function fetchThirdPartyEmotes(callmeCog) {
         try {
             const [bttvResponse, ffzResponse] = await Promise.all([
-                fetch(`https://api.betterttv.net/3/cached/users/twitch/${channel}`).then(res => res.json()),
-                fetch(`https://api.frankerfacez.com/v1/room/${channel}`).then(res => res.json()),
+                xfetch(`https://api.betterttv.net/3/cached/users/twitch/${callmeCog}`).then(res => res.json()),
+                fetch(`https://api.frankerfacez.com/v1/room/${callmeCog}`).then(res => res.json()),
             ]);
 
             const emotes = {};
@@ -594,32 +608,73 @@
                     emoteImg.src = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/1.0`;
                     emoteImg.alt = `Emote: ${message.slice(start, end + 1)}`;
                     messageParts.push(emoteImg);
+                    emoteImg.className = 'emote';
                     lastIndex = end + 1;
                 });
             });
         }
 
-        // Parse third-party emotes
-        Object.entries(thirdPartyEmotes).forEach(([emoteCode, emoteUrl]) => {
-            const regex = new RegExp(`\\b${emoteCode}\\b`, 'g');
-            let match;
-            while ((match = regex.exec(message)) !== null) {
-                if (match.index > lastIndex) {
-                    messageParts.push(document.createTextNode(message.slice(lastIndex, match.index)));
-                }
-                const emoteImg = document.createElement('img');
-                emoteImg.src = emoteUrl;
-                emoteImg.alt = `Emote: ${emoteCode}`;
-                messageParts.push(emoteImg);
-                lastIndex = match.index + emoteCode.length;
-            }
-        });
-
+        // Add remaining text before processing third-party emotes
         if (lastIndex < message.length) {
             messageParts.push(document.createTextNode(message.slice(lastIndex)));
         }
 
-        return messageParts;
+        // Process third-party emotes in the text
+        const processedParts = [];
+        messageParts.forEach(part => {
+            if (part.nodeType === Node.TEXT_NODE) {
+                let text = part.textContent;
+                let textParts = [];
+                let currentIndex = 0;
+                const sortedEmoteCodes = Object.keys(thirdPartyEmotes).sort((a,b) => b.length - a.length); // Sort emotes by length for multi-word emotes
+
+                while (currentIndex < text.length) {
+                    let found = false;
+
+                    // Check each emote code for a match at current position
+                    for (const emoteCode of sortedEmoteCodes) {
+                        if (text.startsWith(emoteCode, currentIndex)) {
+                            // Add text before emote if any
+                            if (currentIndex > 0) {
+                                textParts.push(document.createTextNode(text.slice(0, currentIndex)));
+                            }
+
+                            // Add emote images
+                            const emoteImg = document.createElement('img');
+                            emoteImg.src = thirdPartyEmotes[emoteCode];
+                            emoteImg.alt = emoteCode;
+                            emoteImg.className = 'emote';
+                            textParts.push(emoteImg);
+
+                            // Move past this emote
+                            currentIndex += emoteCode.length;
+                            text = text.slice(currentIndex);
+                            currentIndex = 0;
+                            found = true;
+                            break;
+
+                        }
+                    }
+
+                    if (!found) {
+                        currentIndex++;
+                    }
+                }
+
+                // Add any remaining text
+                if (currentIndex === 0 && text.length > 0) {
+                    textParts.push(document.createTextNode(text));
+                } else if (currentIndex > 0) {
+                    textParts.push(document.createTextNode(text));
+                }
+
+                processedParts.push(...textParts);
+            } else {
+                processedParts.push(part);
+            }
+        });
+
+        return processedParts;
     }
 
     // Initialize ComfyJS and fetch third-party emotes
@@ -697,7 +752,6 @@
         addMessage(newMessage); // Add the new message to the chat list
     };
 
-    // Initialize ComfyJS
     ComfyJS.Init('callmeCog');
 </script>
 </body>
